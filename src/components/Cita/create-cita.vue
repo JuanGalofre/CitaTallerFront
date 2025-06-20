@@ -51,12 +51,18 @@ const cita = reactive<CitaParcial>({
 
 async function generarCita() {
   try {
-    crearCita(cita)
+    await crearCita(cita)
     toast.success('Cita registrada')
     router.push('/dashunificado')
   } catch (error) {
     console.log(error)
-    toast.error('Ups, hubo un error al intentar registrarte.')
+    if (error.response?.status === 422) {
+      const mensaje = Object.values(error.response.data.details).flat().join('\n')
+      toast.error(mensaje)
+    } else {
+      console.log(error)
+      toast.error('Ups, hubo un error al intentar registrarte.')
+    }
   }
 }
 </script>

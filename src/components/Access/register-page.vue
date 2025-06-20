@@ -73,6 +73,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toast-notification'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const toast = useToast()
 const router = useRouter()
@@ -93,6 +94,8 @@ async function registrar() {
       password: password.value,
     })
     const token = response.data.token
+    const auth = useAuthStore()
+    auth.setToken(token)
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     toast.success('¡Woo, te redigiremos en un instante!')
   } catch (error) {

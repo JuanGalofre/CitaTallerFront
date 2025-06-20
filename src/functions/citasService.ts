@@ -10,7 +10,7 @@ export async function obtenerCitas(): Promise<Cita[]> {
 }
 
 export async function crearCita(citaParcial: CitaParcial) {
-  await axios.post(BASE_URL, { citaParcial })
+  await axios.post(BASE_URL, { ...citaParcial })
 }
 
 export async function actualizarEstadoCita(cita: Cita, estado: string): Promise<void> {

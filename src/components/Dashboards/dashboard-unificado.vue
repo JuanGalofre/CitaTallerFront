@@ -5,6 +5,7 @@
         <span class="visually-hidden">Cargando...</span>
       </div>
     </div>
+
     <div v-else class="card">
       <div class="card-header text-center">
         <h4 v-if="admin">Lista de citas</h4>
@@ -12,10 +13,21 @@
         <button class="btn-add-cita" @click="agregarCita">Añadir cita</button>
       </div>
       <div class="card-body">
+        <div class="mb-3">
+          <label for="filter" class="form-label">Buscar Cita</label>
+          <input
+            type="text"
+            id="filter"
+            v-model="filtro"
+            class="form-control"
+            placeholder="Filtrar por fecha, hora, descripción o estado"
+          />
+        </div>
         <table class="table table-dark">
           <thead>
             <tr>
               <th>#</th>
+              <th v-if="admin">Id usuario</th>
               <th>Fecha</th>
               <th>Hora</th>
               <th>Descripción</th>
@@ -27,11 +39,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="citas.length === 0">
-              <td colspan="8" class="text-center">Sin registros</td>
+            <tr v-if="citasFiltradas.length === 0">
+              <td colspan="8" class="text-center">No se encontraron registros</td>
             </tr>
-            <tr v-for="(cita, index) in citasPaginadas" :key="cita.id">
+            <tr v-for="(cita, index) in citasFiltradas" :key="cita.id">
               <td>{{ index + 1 }}</td>
+              <td v-if="admin">{{ cita.user_id }}</td>
               <td>{{ cita.fecha }}</td>
               <td>{{ cita.hora }}</td>
               <td>{{ cita.descripcion }}</td>
@@ -67,6 +80,7 @@
             </tr>
           </tbody>
         </table>
+
         <div class="pagination">
           <button @click="cambiarPagina(pagina - 1)" :disabled="pagina === 1">Anterior</button>
           <span>Página {{ pagina }} de {{ paginasTotales }}</span>
@@ -94,17 +108,26 @@ const router = useRouter()
 const citas = ref<Cita[]>([])
 const auth = useAuthStore()
 const admin = auth.isAdmin
-const cargando = ref(false)
-const pagina = ref(1)
+const cargando = ref<bool>(false)
+const pagina = ref<number>(1)
 const itemsPorPagina = 10
+const filtro = ref<string>('')
 
 const paginasTotales = computed(() => {
   return Math.ceil(citas.value.length / itemsPorPagina)
 })
-const citasPaginadas = computed(() => {
+
+const citasFiltradas = computed(() => {
+  const citasFiltradas = citas.value.filter(cita => {
+    const lowerCita = JSON.stringify(cita).toLowerCase()
+    return lowerCita.includes(filtro.value.toLowerCase()) 
+  })
   const start = (pagina.value - 1) * itemsPorPagina
-  return citas.value.slice(start, start + itemsPorPagina)
+  return citasFiltradas.slice(start, start + itemsPorPagina)
 })
+
+
+
 // Función para cambiar de página
 const cambiarPagina = (nuevaPagina: number) => {
   if (nuevaPagina >= 1 && nuevaPagina <= paginasTotales.value) {
